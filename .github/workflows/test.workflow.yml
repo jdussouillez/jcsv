@@ -1,0 +1,22 @@
+name: verify
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: ['17', '18', '19']
+    name: JDK ${{matrix.java}}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup the JDK
+        id: setup-jdk
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{matrix.java}}
+          distribution: 'adopt'
+      - name: Maven build & verify
+        id: mvn-verify
+        run: mvn -B verify

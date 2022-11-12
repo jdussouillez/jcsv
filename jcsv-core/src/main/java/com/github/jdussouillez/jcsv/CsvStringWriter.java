@@ -6,19 +6,9 @@ package com.github.jdussouillez.jcsv;
 public class CsvStringWriter implements CsvWriter {
 
     /**
-     * Column separator
+     * CSV configuration
      */
-    private static final char COL_SEP = ',';
-
-    /**
-     * Line separator
-     */
-    private static final String LINE_SEP = System.lineSeparator();
-
-    /**
-     * String escape character
-     */
-    private static final char STRING_ESCAPE_CHAR = '"';
+    protected final CsvConfiguration configuration;
 
     /**
      * CSV content
@@ -27,8 +17,11 @@ public class CsvStringWriter implements CsvWriter {
 
     /**
      * Constructor
+     *
+     * @param configuration Configuration
      */
-    public CsvStringWriter() {
+    public CsvStringWriter(final CsvConfiguration configuration) {
+        this.configuration = configuration;
         content = new StringBuilder();
     }
 
@@ -47,13 +40,13 @@ public class CsvStringWriter implements CsvWriter {
         if (value != null && !value.isEmpty()) {
             content.append(escapeStr ? escape(value) : value);
         }
-        content.append(COL_SEP);
+        content.append(configuration.columnSeparator());
         return this;
     }
 
     @Override
     public CsvStringWriter append(final String value) {
-        return append(value, true);
+        return append(value, configuration.escapeStrings());
     }
 
     @Override
@@ -69,7 +62,7 @@ public class CsvStringWriter implements CsvWriter {
     @Override
     public CsvStringWriter newline() {
         removeTrailingColSep();
-        content.append(LINE_SEP);
+        content.append(configuration.lineSeparator());
         return this;
     }
 
@@ -80,11 +73,12 @@ public class CsvStringWriter implements CsvWriter {
      * @return The escaped string
      */
     private String escape(final String s) {
+        final var quote = configuration.doubleQuotes() ? '"' : '\'';
         return String.format(
             "%s%s%s",
-            STRING_ESCAPE_CHAR,
-            s.replace(String.valueOf(STRING_ESCAPE_CHAR), String.valueOf(STRING_ESCAPE_CHAR) + STRING_ESCAPE_CHAR),
-            STRING_ESCAPE_CHAR
+            quote,
+            s.replace(String.valueOf(quote), String.valueOf(quote) + quote),
+            quote
         );
     }
 
@@ -94,7 +88,7 @@ public class CsvStringWriter implements CsvWriter {
      * @return true si le contenu CSV se termine par un séparateur de colonne, false sinon
      */
     private boolean endsWithColSep() {
-        return content.length() > 0 && content.charAt(content.length() - 1) == COL_SEP;
+        return content.length() > 0 && content.charAt(content.length() - 1) == configuration.columnSeparator();
     }
 
     /**
